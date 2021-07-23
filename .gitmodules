@@ -1,0 +1,3 @@
+[submodule "ebpf-samples"]
+	path = ebpf-samples
+	url = git@github.com:vbpf/ebpf-samples.git
