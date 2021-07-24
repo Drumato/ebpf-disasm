@@ -19,7 +19,9 @@ def collect_cmd_arguments() -> argparse.Namespace:
 if __name__ == '__main__':
     args = collect_cmd_arguments()
     for obj_file in args.object_files:
-        err = dis_assemble_elf(obj_file)
-        if type(err) is Error:
-            print(err.fatal_message(), file=sys.stderr)
+        result = dis_assemble_elf(obj_file)
+        if type(result) is Error:
+            print(result.fatal_message(), file=sys.stderr)
             exit(1)
+
+        print(result)

@@ -6,6 +6,7 @@ from elftools.elf.constants import SH_FLAGS
 
 from .error import Error, ErrorReason
 from .decoder import decode
+from .instruction import MemoryOpcodeEncoding, MemoryMode, InstructionClass
 
 
 def dis_assemble_elf(file_path: str) -> Union[str, Error]:
@@ -33,13 +34,17 @@ def dis_assemble_symbol(ebpf_symbol: Section) -> Union[str, Error]:
 
 def dis_assemble_ebpf_fn(ebpf_fn: Section) -> Union[str, Error]:
     ebpf_codes = ebpf_fn.data()
-    instruction_number = ebpf_fn.data_size // 8
+    cur_inst_offset = 0
 
-    for i in range(instruction_number):
-        raw_inst = ebpf_codes[i * 8:(i + 1) * 8]
-        decode(raw_inst)
+    dis_assembled = f"{ebpf_fn.name}:\n"
 
-    return ""
+    while cur_inst_offset < len(ebpf_codes):
+        inst = decode(ebpf_codes[cur_inst_offset:])
+        dis_assembled += f"  {inst.string()}\n"
+        cur_inst_offset += 16 if type(inst.encoding) == MemoryOpcodeEncoding and inst.encoding.inst_class in [
+            InstructionClass.LD, InstructionClass.LDX] and inst.encoding.mode == MemoryMode.IMM else 8
+
+    return dis_assembled
 
 
 def is_ebpf_function(sct: Section) -> bool:
